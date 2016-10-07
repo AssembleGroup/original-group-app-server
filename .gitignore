@@ -1,0 +1,9 @@
+.idea/
+src/Assemble/vendor/
+src/Assemble/Config/Propel/generated-*/
+src/Assemble/Logs/
+node_modules/
+src/Assemble/composer.phar
+src/Assemble/composer.lock
+src/Assemble/Models/Base/
+src/Assemble/Models/Map/
