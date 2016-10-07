@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<database name="assemble" defaultIdMethod="native" namespace="Assemble\Models">
+    <table name="group" phpName="Group">
+        <column name="id" type="integer" required="true" primaryKey="true" autoIncrement="true"/>
+        <column name="name" type="varchar" size="100" primaryString="true" default="Untitled" />
+        <column name="picture" type="varchar" size="100" default="/img/default/group.png" />
+        <column name="position" type="object" />
+        <behavior name="timestampable"/>
+        <!-- TODO: Surveys... -->
+        <!--<behavior name="query_cache">-->
+            <!--<parameter name="backend" value="custom" />-->
+        <!--</behavior>-->
+        <!--<behavior name="versionable" />-->
+    </table>
+    <table name="person" phpName="Person">
+        <column name="id" type="integer" required="true" primaryKey="true" autoIncrement="true" />
+        <column name="name" type="varchar" size="120" required="true" primaryString="true" />
+        <column name="picture" type="varchar" size="100" default="/img/default/person.png" />
+        <!--<behavior name="query_cache">-->
+        <!--<parameter name="backend" value="custom" />-->
+        <!--</behavior>-->
+    </table>
+    <table name="interest" phpName="Interest">
+        <column name="id" type="integer" required="true" primaryKey="true" autoIncrement="true" />
+        <column name="name" type="varchar" size="60" required="true" primaryString="true" />
+        <!--<behavior name="query_cache">-->
+        <!--<parameter name="backend" value="custom" />-->
+        <!--</behavior>-->
+    </table>
+    <table name="feed" phpName="Feed">
+        <column name="id" type="integer" required="true" primaryKey="true" autoIncrement="true" />
+        <column name="groupID" type="integer" primaryKey="true" />
+        <column name="body" type="longvarchar" required="true" />
+        <!--<behavior name="query_cache">-->
+        <!--<parameter name="backend" value="custom" />-->
+        <!--</behavior>-->
+        <!--<behavior name="sluggable" />-->
+        <foreign-key foreignTable="group" onDelete="CASCADE">
+            <reference local="groupID" foreign="id"/>
+        </foreign-key>
+    </table>
+    <table name="person_group" phpName="PersonGroup" isCrossRef="true">
+        <column name="personID" type="integer" required="true" primaryKey="true" />
+        <column name="groupID" type="integer" required="true" primaryKey="true" />
+        <foreign-key foreignTable="person" onDelete="CASCADE">
+            <reference local="personID" foreign="id"/>
+        </foreign-key>
+        <foreign-key foreignTable="group" onDelete="CASCADE">
+            <reference local="groupID" foreign="id"/>
+        </foreign-key>
+        <!--<behavior name="query_cache">-->
+        <!--<parameter name="backend" value="custom" />-->
+        <!--</behavior>-->
+    </table>
+    <table name="group_interest" phpName="GroupInterest" isCrossRef="true">
+        <column name="groupID" type="integer" required="true" primaryKey="true" />
+        <column name="interestID" type="integer" required="true" primaryKey="true" />
+        <foreign-key foreignTable="group" onDelete="CASCADE">
+            <reference local="groupID" foreign="id"/>
+        </foreign-key>
+        <foreign-key foreignTable="interest" onDelete="CASCADE">
+            <reference local="interestID" foreign="id"/>
+        </foreign-key>
+        <!--<behavior name="query_cache">-->
+        <!--<parameter name="backend" value="custom" />-->
+        <!--</behavior>-->
+    </table>
+    <table name="person_interest" phpName="PersonInterest" isCrossRef="true">
+        <column name="personID" type="integer" required="true" primaryKey="true" />
+        <column name="interestID" type="integer" required="true" primaryKey="true" />
+        <foreign-key foreignTable="person" onDelete="CASCADE">
+            <reference local="personID" foreign="id"/>
+        </foreign-key>
+        <foreign-key foreignTable="interest" onDelete="CASCADE">
+            <reference local="interestID" foreign="id"/>
+        </foreign-key>
+        <!--<behavior name="query_cache">-->
+            <!--<parameter name="backend" value="custom" />-->
+        <!--</behavior>-->
+    </table>
+</database>

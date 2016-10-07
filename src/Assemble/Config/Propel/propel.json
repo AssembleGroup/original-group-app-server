@@ -1,0 +1,32 @@
+{
+  "propel": {
+    "general": {
+      "project": "Assemble server"
+    },
+    "paths": {
+      "schemaDir": "./",
+      "phpDir": "../../../"
+    },
+    "database": {
+      "connections": {
+        "assemble": {
+          "adapter": "mysql",
+          "dsn": "mysql:host=127.0.0.1;dbname=assemble",
+          "user": "assemble",
+          "password": "betterThanFacebookGroups",
+          "settings": {
+            "charset": "utf8"
+          }
+        }
+      }
+    },
+    "runtime": {
+      "defaultConnection": "assemble",
+      "connections": ["assemble"]
+    },
+    "generator": {
+      "defaultConnection": "assemble",
+      "connections": ["assemble"]
+    }
+  }
+}
