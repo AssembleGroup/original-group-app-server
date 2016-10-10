@@ -5,7 +5,7 @@ return [
     //'addContentLengthHeader' => false,
     // Monolog settings
     'logger' => [
-        'name' => 'Ramble',
+        'name' => 'Assemble',
         'path' => __DIR__ . '/../../Logs/assemble.log',
     ],
     'debug' => [
