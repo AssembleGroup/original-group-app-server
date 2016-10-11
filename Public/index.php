@@ -16,5 +16,4 @@ require __DIR__ . "/../src/Assemble/Server.php";
 
 $server = new Server();
 
-session_start();
 $server();

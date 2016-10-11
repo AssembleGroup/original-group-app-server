@@ -12,6 +12,9 @@ namespace Assemble\Controllers;
 use Assemble\Middleware\AssembleAuthenticator;
 use Assemble\Middleware\PermissionLevel;
 use Assemble\Middleware\Permissions;
+use Assemble\Server;
+use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ResponseInterface;
 use Slim\Middleware\HttpBasicAuthentication;
 
 class Router {
@@ -19,10 +22,14 @@ class Router {
 		$app->get('/', Base::class . ':getBase')->add(new Permissions(PermissionLevel::GUEST()));
 		$app->post('/register', Base::class . ':postRegister')->add(new Permissions(PermissionLevel::GUEST()));
 
-//		$app->add(new HttpBasicAuthentication([
-//			'passthrough' => ['/register', '/login', '/', ''],
-//			'authenticator' => new AssembleAuthenticator(),
-//			'secure' => false,
-//		]));
+
+		$app->add(new HttpBasicAuthentication([
+			'passthrough' => ['/register', '/'],
+			'authenticator' => new AssembleAuthenticator(),
+			'secure' => !Server::$DEBUG,
+            'error' => function(RequestInterface $req, ResponseInterface $res, array $args) use ($app){
+			    return (new Base($app->getContainer()))->clientError($res, new Error(ErrorCodes::CLIENT_VAGUE_BAD_LOGIN));
+            },
+		]));
 	}
 }

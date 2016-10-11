@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 if [ ! -e composer.phar ]; then
     curl -s https://getcomposer.org/installer | php
     echo "--- Downloaded composer. ---"
@@ -7,27 +7,25 @@ else
 fi
 
 php composer.phar install -o
-export PATH=$(realpath ./vendor/bin):$PATH
+PATH=$(realpath ./vendor/bin):$PATH
 echo "--- Installed/updated dependencies. ---"
-cd ./Config/Propel
+cd ./Config/Propel || exit
 
-function existing {
+existing(){
     propel migration:diff
     propel migration:up
 }
 
-EXISTING=false
 
 propel config:convert
-
+propel model:build
 if [ -e ../../.existing-original-server ]; then
-    EXISTING=true
     existing
 else
     read -p $'\e[33m\e[1m>>> Is this a new install?\e[0m\e[39m Answering \'yes\' will wipe any existing database. [y/n] ' -n 1 -r
     echo    # (optional) move to a new line
     if [[ $REPLY =~ ^[Yy]$ ]]; then
-        propel sql:build
+        propel sql:build --overwrite
         propel sql:insert
     else
         existing
@@ -35,7 +33,7 @@ else
     touch ../../.existing-original-server
 fi
 
-propel model:build
 echo "--- Propel finished. ---"
 echo "--- Completely done! ---"
-cd ../..
+cd ../.. || exit
+

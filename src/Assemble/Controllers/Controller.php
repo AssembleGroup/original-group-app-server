@@ -12,6 +12,8 @@ use Interop\Container\ContainerInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 
+
+
 abstract class Controller {
 	protected $ci;
 	/**
@@ -29,8 +31,16 @@ abstract class Controller {
 		$this->router = $ci->router;
 	}
 
-	public function clientError(ResponseInterface $res, string $message){
-		return $this->render($res, ['error' => ['message' => $message]], 400);
+	public function clientError(ResponseInterface $res, Error $error){
+	    if($error == null)
+	        $error = new Error();
+		return $this->render($res, [ 'error' => [ 'type' => 'client', 'code' => $error->code, 'message' => $error->message ]], 400);
+	}
+
+	public function serverError(ResponseInterface $res, Error $error){
+		if($error == null)
+			$error = new Error();
+		return $this->render($res, [ 'error' => [ 'type' => 'server', 'code' => $error->code, 'message' => $error->message ]], 500);
 	}
 
 	public function render(ResponseInterface $res, $args = null, int $statusCode = 200): ResponseInterface {

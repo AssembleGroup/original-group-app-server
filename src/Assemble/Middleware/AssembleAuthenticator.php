@@ -13,14 +13,14 @@ use Assemble\Models\PersonQuery;
 use Slim\Middleware\HttpBasicAuthentication\AuthenticatorInterface;
 
 class AssembleAuthenticator implements AuthenticatorInterface {
-	public function __invoke(array $arguments) : bool {
-		$pq = new PersonQuery();
-		$user = $pq->findOneByUsername($arguments['user']);
+	public function __invoke(array $args) : bool {
+		if(empty($args['username']))
+			return false;
+		$user = PersonQuery::create()->findOneByUsername($args['username']);
 
 		if($user != null) {
-			// TODO: hash pass and compare
-			// if($user->getPassword() == magic_hash_function($arguments['password']))
-			return true;
+			if(password_verify($args['password'], $user->getPassword()))
+				return true;
 		}
 		return false;
 	}
