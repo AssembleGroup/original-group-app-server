@@ -10,10 +10,15 @@ namespace Assemble;
 
 
 use Assemble\Controllers\Router;
+use Assemble\Middleware\Permissions\Permissions;
 use Interop\Container\ContainerInterface;
 use Monolog\Handler\RotatingFileHandler;
 use Monolog\Logger;
 use Propel\Runtime\Propel;
+use Kint;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Slim\Http\Response;
 
 require __DIR__ . '/vendor/autoload.php';
 require __DIR__ . '/Config/Propel/generated-conf/config.php';
@@ -35,12 +40,17 @@ class Server {
 	}
 
 	private function init() : \Slim\App {
+        Kint::enabled(self::$DEBUG);
 		$app = new \Slim\App(["settings" => require __DIR__ . "/Config/Slim/slim.php"]);
 		$container = $app->getContainer();
 
 		$container['assemble'] = [
 			'debug' => static::$DEBUG,
 		];
+
+		$container[Permissions::$containerFolder] = $container->protect(function($ci, $request, $response): ResponseInterface {
+			return $response->withJson(['error' => ['You do not have the appropriate permissions to perform this.']], 400);
+		});
 
 		$container['logger'] = (function (ContainerInterface $c) {
 			$loggerSettings = $c['settings']['logger'];
@@ -49,6 +59,8 @@ class Server {
 			$logger->pushHandler(new RotatingFileHandler($loggerSettings['path'], 2, $c['assemble']['debug']? Logger::DEBUG : Logger::INFO));
 			return $logger;
 		})($container);
+
+		$container['user'] = -1;
 
 		Propel::getServiceContainer()->setLogger($container['settings']['logger']["name"], $container->logger);
 		return $app;

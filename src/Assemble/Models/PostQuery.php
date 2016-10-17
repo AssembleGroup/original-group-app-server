@@ -2,10 +2,10 @@
 
 namespace Assemble\Models;
 
-use Assemble\Models\Base\FeedQuery as BaseFeedQuery;
+use Assemble\Models\Base\PostQuery as BasePostQuery;
 
 /**
- * Skeleton subclass for performing query and update operations on the 'feed' table.
+ * Skeleton subclass for performing query and update operations on the 'post' table.
  *
  *
  *
@@ -14,7 +14,7 @@ use Assemble\Models\Base\FeedQuery as BaseFeedQuery;
  * long as it does not already exist in the output directory.
  *
  */
-class FeedQuery extends BaseFeedQuery
+class PostQuery extends BasePostQuery
 {
 
 }

@@ -14,7 +14,7 @@ use Psr\Http\Message\ResponseInterface;
 
 
 
-abstract class Controller {
+abstract class Controller implements Permissible {
 	protected $ci;
 	/**
 	 * @var \Monolog\Logger

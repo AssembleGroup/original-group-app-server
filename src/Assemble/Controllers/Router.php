@@ -10,8 +10,9 @@ namespace Assemble\Controllers;
 
 
 use Assemble\Middleware\AssembleAuthenticator;
-use Assemble\Middleware\PermissionLevel;
-use Assemble\Middleware\Permissions;
+use Assemble\Middleware\Permissions\GuestPermissions;
+use Assemble\Middleware\Permissions\OwnerPermissions;
+use Assemble\Middleware\Permissions\RegisteredPermissions;
 use Assemble\Server;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -19,17 +20,64 @@ use Slim\Middleware\HttpBasicAuthentication;
 
 class Router {
 	public static function pave(\Slim\App $app){
-		$app->get('/', Base::class . ':getBase')->add(new Permissions(PermissionLevel::GUEST()));
-		$app->post('/register', Base::class . ':postRegister')->add(new Permissions(PermissionLevel::GUEST()));
 
 
+		$app->get('/', BaseController::class . ':getBase');
+		$app->post('/register', PersonController::class . ':createPerson')->add(GuestPermissions::class);
+
+		$app->group('/user', function() use ($app) {
+			$app->get('', PersonController::class . ':getCurrentPerson')->add(RegisteredPermissions::class);
+			$app->post('', PersonController::class . ':createPerson')->add(GuestPermissions::class);
+
+			$app->get('/feed', PersonController::class . ':getPersonalFeed')->add(RegisteredPermissions::class);
+			$app->get('/groups', PersonController::class . ':getPersonGroups')->add(OwnerPermissions::class);
+
+			$app->group('/group', function() use ($app){
+				$app->post('', PersonController::class . ':addGroupToPerson')->add(OwnerPermissions::class);
+				$app->delete('/{groupID:\d{1,6}}', PersonController::class . ':removeGroupFromPerson')->add(OwnerPermissions::class);
+			});
+
+			$app->group('/{personID:\d{1,6}}', function() use($app) {
+				$app->get('', PersonController::class . ':getSpecificPerson');
+				$app->map(['PATCH', 'PUT'],'', PersonController::class . ':changePerson')->add(OwnerPermissions::class);
+
+				$app->get('/groups', PersonController::class . ':getPersonGroups');
+
+				$app->group('/group', function() use ($app){
+					$app->post('', PersonController::class . ':addGroupToPerson')->add(OwnerPermissions::class);
+					$app->delete('', PersonController::class . ':removeGroupFromPerson')->add(OwnerPermissions::class);
+				});
+			});
+		});
+
+		$app->group('/interest', function() use ($app) {
+			$app->group('/{interestID:\d{1,6}}', function () use($app){
+				$app->get('', GroupController::class . ':getGroupsByInterest');
+				$app->delete('', InterestController::class . ':deleteInterest');
+			});
+		});
+
+		$app->group('/group', function() use ($app) {
+			$app->post('', GroupController::class . ':createGroup')->add(RegisteredPermissions::class);
+
+			$app->group('/{groupID:\d{1,6}}', function () use($app){
+				$app->get('', GroupController::class . ':getGroup');
+				$app->map(['PATCH', 'PUT'],'', GroupController::class . ':changeGroup');
+
+				$app->get('/users', GroupController::class . ':getGroupPeople');
+				$app->get('/feed', GroupController::class . ':getGroupFeed');
+			});
+
+			$app->delete('/person/{personID:\d{1,6}}', GroupController::class . ':removePersonFromGroup');
+		});
 		$app->add(new HttpBasicAuthentication([
-			'passthrough' => ['/register', '/'],
-			'authenticator' => new AssembleAuthenticator(),
+			'path' => ['/'],
+			'passthrough' => ['/register', '/test'],
+			'authenticator' => new AssembleAuthenticator($app->getContainer()),
 			'secure' => !Server::$DEBUG,
-            'error' => function(RequestInterface $req, ResponseInterface $res, array $args) use ($app){
-			    return (new Base($app->getContainer()))->clientError($res, new Error(ErrorCodes::CLIENT_VAGUE_BAD_LOGIN));
-            },
+			'error' => function (RequestInterface $req, ResponseInterface $res, array $args) use ($app) {
+				return (new BaseController($app->getContainer()))->clientError($res, new Error(ErrorCodes::CLIENT_VAGUE_BAD_LOGIN));
+			},
 		]));
 	}
 }

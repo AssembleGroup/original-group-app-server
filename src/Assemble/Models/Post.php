@@ -2,10 +2,10 @@
 
 namespace Assemble\Models;
 
-use Assemble\Models\Base\Feed as BaseFeed;
+use Assemble\Models\Base\Post as BasePost;
 
 /**
- * Skeleton subclass for representing a row from the 'feed' table.
+ * Skeleton subclass for representing a row from the 'post' table.
  *
  *
  *
@@ -14,7 +14,7 @@ use Assemble\Models\Base\Feed as BaseFeed;
  * long as it does not already exist in the output directory.
  *
  */
-class Feed extends BaseFeed
+class Post extends BasePost
 {
 
 }
