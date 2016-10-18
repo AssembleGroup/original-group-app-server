@@ -1,6 +1,7 @@
 #!/bin/bash
 if [ ! -e composer.phar ]; then
-    curl -s https://getcomposer.org/installer | php
+    echo "--- Composer Phar is missing, fixing... ---"
+    curl https://getcomposer.org/installer | php
     echo "--- Downloaded composer. ---"
 else
     echo "--- Composer detected. ---"
