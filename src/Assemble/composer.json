@@ -1,0 +1,25 @@
+{
+  "name": "Assemble/Server",
+  "description": "Original group app backend",
+  "minimum-stability": "stable",
+  "license": "MIT license",
+  "authors": [
+    {
+      "name": "Peter Clotworthy",
+      "email": "me@sacredskull.net"
+    }
+  ],
+  "require": {
+    "slim/slim": "3.5.0",
+    "tuupola/slim-basic-auth": "2.2.0",
+    "monolog/monolog": "1.21.0",
+    "propel/propel": "2.0.0-alpha5",
+    "myclabs/php-enum": "1.5.0",
+    "raveren/kint": "1.0.10"
+  },
+  "autoload": {
+    "psr-4": {
+      "Assemble\\": "./"
+    }
+  }
+}

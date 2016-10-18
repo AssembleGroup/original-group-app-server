@@ -7,3 +7,4 @@ src/Assemble/composer.phar
 src/Assemble/composer.lock
 src/Assemble/Models/Base/
 src/Assemble/Models/Map/
+src/Assemble/.existing-original-server
