@@ -18,6 +18,6 @@ class RegisteredPermissions extends Permissions {
 		$user = $this->ci->user;
 		if($user !== -1 && is_a($user, Person::class))
 			return $next($request, $response);
-		return $this->failed($request, $response);
+		return $this->failed($request, $response, 'You must be logged in to perform this.');
 	}
 }

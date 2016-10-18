@@ -37,7 +37,7 @@ class PersonController extends Controller {
 		$arrGroup = [];
 		$i = 1;
 		foreach ($person->getGroups($publicCriteria) as $group) {
-			$arrGroup[$i++] = [$group->getId(), $group->getName()];
+			$arrGroup[$i++] = [$group->getId() => $group->getName()];
 		}
 
 		$payload['Groups'] = $arrGroup;

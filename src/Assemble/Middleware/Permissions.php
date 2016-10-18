@@ -36,9 +36,9 @@ abstract class Permissions {
 
 	protected abstract function checkPermission(ServerRequestInterface $request, ResponseInterface $response, callable $next): ResponseInterface;
 
-	protected function failed(ServerRequestInterface $req, ResponseInterface $res) : ResponseInterface {
+	protected function failed(ServerRequestInterface $req, ResponseInterface $res, $msg = null) : ResponseInterface {
 		if($this->deniedHandler !== null && is_callable($this->deniedHandler))
-			return call_user_func($this->deniedHandler, $this->ci, $req, $res);
+			return call_user_func($this->deniedHandler, $this->ci, $req, $res, $msg);
 		// Just return the (presumably) blank response object
 		return $res;
 	}

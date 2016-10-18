@@ -37,6 +37,24 @@ abstract class Controller implements Permissible {
 		return $this->render($res, [ 'error' => [ 'type' => 'client', 'code' => $error->code, 'message' => $error->message ]], 400);
 	}
 
+	public static function generalClientError(ResponseInterface $res, Error $error, $args) {
+		if($error == null)
+			$error = new Error();
+
+		$data = [
+			'api' => 'Assemble',
+			'version' => "alpha-0.1",
+			'time' => time(),
+		];
+		if(is_array($args)) {
+			$data = array_merge($data, $args);
+		} else if($args != null){
+			array_push($data, $args);
+		}
+
+		return $res->withJson($data, 400);
+	}
+
 	public function serverError(ResponseInterface $res, Error $error){
 		if($error == null)
 			$error = new Error();

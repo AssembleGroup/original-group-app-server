@@ -9,6 +9,9 @@
 namespace Assemble;
 
 
+use Assemble\Controllers\Controller;
+use Assemble\Controllers\Error;
+use Assemble\Controllers\ErrorCodes;
 use Assemble\Controllers\Router;
 use Assemble\Middleware\Permissions\Permissions;
 use Interop\Container\ContainerInterface;
@@ -48,8 +51,10 @@ class Server {
 			'debug' => static::$DEBUG,
 		];
 
-		$container[Permissions::$containerFolder] = $container->protect(function($ci, $request, $response): ResponseInterface {
-			return $response->withJson(['error' => ['You do not have the appropriate permissions to perform this.']], 400);
+		$container[Permissions::$containerFolder] = $container->protect(function($ci, $request, $response, $msg = null): ResponseInterface {
+			if($msg == null)
+				$msg = 'You do not have the appropriate permissions to perform this.';
+			return Controller::generalClientError($response, new Error(ErrorCodes::CLIENT_VAGUE_BAD_LOGIN, $msg), ['error' => $msg]);
 		});
 
 		$container['logger'] = (function (ContainerInterface $c) {

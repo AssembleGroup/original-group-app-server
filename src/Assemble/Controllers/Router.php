@@ -28,13 +28,14 @@ class Router {
 		$app->group('/user', function() use ($app) {
 			$app->get('', PersonController::class . ':getCurrentPerson')->add(RegisteredPermissions::class);
 			$app->post('', PersonController::class . ':createPerson')->add(GuestPermissions::class);
+			$app->map(['PATCH', 'PUT'],'', PersonController::class . ':changePerson')->add(OwnerPermissions::class);
 
 			$app->get('/feed', PersonController::class . ':getPersonalFeed')->add(RegisteredPermissions::class);
 			$app->get('/groups', PersonController::class . ':getPersonGroups')->add(OwnerPermissions::class);
 
 			$app->group('/group', function() use ($app){
 				$app->post('', PersonController::class . ':addGroupToPerson')->add(OwnerPermissions::class);
-				$app->delete('/{groupID:\d{1,6}}', PersonController::class . ':removeGroupFromPerson')->add(OwnerPermissions::class);
+				$app->delete('', PersonController::class . ':removeGroupFromPerson')->add(OwnerPermissions::class);
 			});
 
 			$app->group('/{personID:\d{1,6}}', function() use($app) {
@@ -45,15 +46,14 @@ class Router {
 
 				$app->group('/group', function() use ($app){
 					$app->post('', PersonController::class . ':addGroupToPerson')->add(OwnerPermissions::class);
-					$app->delete('', PersonController::class . ':removeGroupFromPerson')->add(OwnerPermissions::class);
+//					$app->delete('', PersonController::class . ':removeGroupFromPerson')->add(OwnerPermissions::class);
 				});
 			});
 		});
 
 		$app->group('/interest', function() use ($app) {
 			$app->group('/{interestID:\d{1,6}}', function () use($app){
-				$app->get('', GroupController::class . ':getGroupsByInterest');
-				$app->delete('', InterestController::class . ':deleteInterest');
+				$app->get('[/page/{page:\d{1,6}}]', GroupController::class . ':getGroupsByInterest');
 			});
 		});
 
@@ -65,10 +65,17 @@ class Router {
 				$app->map(['PATCH', 'PUT'],'', GroupController::class . ':changeGroup');
 
 				$app->get('/users', GroupController::class . ':getGroupPeople');
-				$app->get('/feed', GroupController::class . ':getGroupFeed');
+
+				$app->group('/feed', function() use ($app) {
+					$app->get('[/page/{page:\d{1,6}}]', GroupController::class . ':getGroupFeed');
+					$app->post('', GroupController::class . ':postToGroupFeed');
+					$app->map(['PATCH', 'PUT'], '/{postID:\d{1,6}}', GroupController::class . ':changeFeedPost');
+					$app->delete('/post/{postID:\d{1,6}}', GroupController::class . ':deleteFeedPost');
+				});
+
 			});
 
-			$app->delete('/person/{personID:\d{1,6}}', GroupController::class . ':removePersonFromGroup');
+			$app->delete('/user/{personID:\d{1,6}}', GroupController::class . ':removePersonFromGroup');
 		});
 		$app->add(new HttpBasicAuthentication([
 			'path' => ['/'],

@@ -40,6 +40,7 @@
     <table name="post" phpName="Post">
         <column name="id" type="integer" required="true" primaryKey="true" autoIncrement="true" />
         <column name="groupID" type="integer" primaryKey="true" />
+        <column name="personID" type="integer" />
         <column name="body" type="longvarchar" required="true" />
         <!--<behavior name="query_cache">-->
         <!--<parameter name="backend" value="custom" />-->
@@ -47,6 +48,9 @@
         <!--<behavior name="sluggable" />-->
         <foreign-key foreignTable="assemblegroup" onDelete="CASCADE">
             <reference local="groupID" foreign="id"/>
+        </foreign-key>
+        <foreign-key foreignTable="person" onDelete="CASCADE">
+            <reference local="personID" foreign="id"/>
         </foreign-key>
     </table>
     <table name="person_group" phpName="PersonGroup" isCrossRef="true">
