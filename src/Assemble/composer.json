@@ -15,7 +15,8 @@
     "monolog/monolog": "1.21.0",
     "propel/propel": "2.0.0-alpha5",
     "myclabs/php-enum": "1.5.0",
-    "raveren/kint": "1.0.10"
+    "raveren/kint": "1.0.10",
+    "intervention/image": "2.3.8"
   },
   "autoload": {
     "psr-4": {

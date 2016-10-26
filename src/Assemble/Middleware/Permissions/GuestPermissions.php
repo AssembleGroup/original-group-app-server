@@ -11,6 +11,11 @@ namespace Assemble\Middleware\Permissions;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
+/**
+ * Class GuestPermissions
+ * @package Assemble\Middleware\Permissions
+ * Must not be logged in.
+ */
 class GuestPermissions extends Permissions  {
 	protected function checkPermission(ServerRequestInterface $request, ResponseInterface $response, callable $next): ResponseInterface {
 		$user = $this->ci->user;

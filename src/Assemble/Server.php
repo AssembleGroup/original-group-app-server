@@ -12,9 +12,15 @@ namespace Assemble;
 use Assemble\Controllers\Controller;
 use Assemble\Controllers\Error;
 use Assemble\Controllers\ErrorCodes;
+use Assemble\Controllers\GroupController;
 use Assemble\Controllers\Router;
 use Assemble\Middleware\Permissions\Permissions;
+use Assemble\Models\Base\GroupQuery;
+use Assemble\Models\Base\PersonQuery;
+use Assemble\Models\Group;
+use Assemble\Models\Post;
 use Interop\Container\ContainerInterface;
+use Intervention\Image\ImageManager;
 use Monolog\Handler\RotatingFileHandler;
 use Monolog\Logger;
 use Propel\Runtime\Propel;
@@ -49,12 +55,18 @@ class Server {
 
 		$container['assemble'] = [
 			'debug' => static::$DEBUG,
+			'public_dir' => __DIR__ . "/../../Public",
+			'feed_posts_per_page' => 15,
+			'version' => 'alpha-0.2',
 		];
 
-		$container[Permissions::$containerFolder] = $container->protect(function($ci, $request, $response, $msg = null): ResponseInterface {
+		$container[Permissions::$containerFolder] = $container->protect(function($ci, $request, $response, $msg = null) use ($container): ResponseInterface  {
 			if($msg == null)
 				$msg = 'You do not have the appropriate permissions to perform this.';
-			return Controller::generalClientError($response, new Error(ErrorCodes::CLIENT_VAGUE_BAD_LOGIN, $msg), ['error' => $msg]);
+			if(Controller::$sCI == null)
+				Controller::$sCI = $container;
+			return Controller::generalClientError($response, new Error(ErrorCodes::CLIENT_VAGUE_BAD_LOGIN, $msg));
+			//return Controller::generalClientError($response, new Error(ErrorCodes::CLIENT_VAGUE_BAD_LOGIN, $msg), ['error' => $msg]);
 		});
 
 		$container['logger'] = (function (ContainerInterface $c) {
@@ -65,9 +77,14 @@ class Server {
 			return $logger;
 		})($container);
 
+		$container['imager'] = function (ContainerInterface $c) {
+			return new ImageManager(array('driver' => 'gd'));
+		};
+
 		$container['user'] = -1;
 
-		Propel::getServiceContainer()->setLogger($container['settings']['logger']["name"], $container->logger);
+        Propel::getServiceContainer()->setLogger($container['settings']['logger']["name"], $container->logger);
+
 		return $app;
 	}
 

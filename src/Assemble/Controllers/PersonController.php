@@ -9,131 +9,303 @@ namespace Assemble\Controllers;
 
 
 use Assemble\Models\Base\GroupQuery;
+use Assemble\Models\Base\PersonGroupQuery;
+use Assemble\Models\Base\PostQuery;
 use Assemble\Models\Map\PersonTableMap;
 use Assemble\Models\Person;
+use Assemble\Models\PersonGroup;
 use Assemble\Models\PersonQuery;
-use Interop\Container\ContainerInterface;
+use Intervention\Image\Constraint;
+use Intervention\Image\Exception\NotReadableException;
+use Intervention\Image\ImageManager;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
+use Slim\Http\Request;
+use Slim\Http\Response;
 
 class PersonController extends Controller {
-	/**
-	 * @param $id
-	 * @return \Assemble\Models\Person|null
-	 */
-	protected function getPersonInfo(Person $person, bool $showPrivate = false): array{
-		$payload = $person->toArray();
-		unset($payload['Password']);
 
-		$publicCriteria = GroupQuery::create()
-			->usePersonGroupQuery()
-				->filterByHidden(false)
-			->endUse();
-
-		if($showPrivate){
-			$publicCriteria = null;
-		}
-
-		$arrGroup = [];
-		$i = 1;
-		foreach ($person->getGroups($publicCriteria) as $group) {
-			$arrGroup[$i++] = [$group->getId() => $group->getName()];
-		}
-
-		$payload['Groups'] = $arrGroup;
-
-		return $payload;
+    /**
+     * Returns a JSON array of a specified user - but only public information. If the logged in user matches the
+     * specified user, the function redirects to getCurrentPerson().
+     * @see \Assemble\Controllers\PersonController::getCurrentPerson()
+     * @param RequestInterface $req
+     * @param Response $res
+     * @param array $args
+     * @return ResponseInterface
+     */
+    public function getSpecificPerson(RequestInterface $req, Response $res, array $args){
+		$person = PersonQuery::create()->findOneById($args['personID']);
+        if($person == null)
+            return $this->clientError($res, new Error(ErrorCodes::CLIENT_NONEXISTENT_ENTITY, 'A user with that ID could not be found.'));
+        if($person->equals($this->ci->get('user')))
+            return $this->getCurrentPerson($req, $res, $args);
+        return $this->successRender($res, $person->getDetailsArray());
 	}
 
-	protected function fetchPerson($id) : Person{
-		if(is_a($id, Person::class))
-			return $id;
-		return PersonQuery::create()->findOneById($id);
-	}
-
-	public function getSpecificPerson(RequestInterface $req, ResponseInterface $res, array $args){
-		$person = $this->fetchPerson($args['personID']);
-		return $this->render($res, $this->getPersonInfo($person));
-	}
-
-	public function getCurrentPerson(RequestInterface $req, ResponseInterface $res, array $args){
+    /**
+     * Returns public & private information about the currently logged in user.
+     * @param RequestInterface $req
+     * @param Response $res
+     * @param array $args
+     * @return ResponseInterface
+     */
+    public function getCurrentPerson(RequestInterface $req, Response $res, array $args){
 		$person = $this->ci->get('user');
 
 		if($person == null)
-			return $this->clientError($res, new Error(ErrorCodes::SERVER_UNKNOWN_ERROR, 'You do not appear to be logged in.'));
+			return $this->clientError($res, new Error(ErrorCodes::CLIENT_NONEXISTENT_ENTITY, 'You do not appear to be logged in.'));
 
-		return $this->render($res, $this->getPersonInfo($person, true));
+		return $this->successRender($res, $person->getDetailsArray(true));
 	}
 
-	public function getPersonGroups(RequestInterface $req, ResponseInterface $res, array $args): ResponseInterface {
+    /**
+     * Gets a user's details. If you're looking at the public view of your own account (/user/{yourID}/groups),
+     * you only see what everyone else sees. To view hidden groups, you need to use /user/groups.
+     * @param RequestInterface $req
+     * @param Response $res
+     * @param array $args
+     * @return ResponseInterface
+     */
+    public function getPersonGroups(RequestInterface $req, Response $res, array $args): ResponseInterface {
 		$self = false;
 		$user = null;
+	    $publicView = false;
 
 		if(!isset($args['personID'])) {
 			$self = true;
 			$user = $this->ci->get('user');
 		} else {
 			$user = PersonQuery::create()->findOneById($args['personID']);
+			if($this->user !== -1 && $user->getId() == $this->user->getId()){
+				$publicView = true;
+			}
 		}
 
+		$userGroups = [];
 
-		$userGroups = null;
-
-		if($self || (is_a($this->ci->get('user'), Person::class) && $user->equals($this->ci->get('user')))){
+		if($self || (is_a($this->ci->get('user'), Person::class) && $user->equals($this->ci->get('user'))) && !$publicView){
 			$userGroups = $user->getGroups();
 		} else {
 			// Hot damn I like this snippet
 			$notHiddenCriteria = GroupQuery::create()
 				->usePersonGroupQuery()
-				->filterByHidden(false)
+				    ->filterByHidden(false)
 				->endUse();
 
 			$userGroups = $user->getGroups($notHiddenCriteria);
 		}
 
 		$groups = [];
-		$i = 1;
-
 		foreach ($userGroups as $group) {
-			$group[$i++] = [$group->getId(), $group->getName()];
+			$groups[] = [
+				$group->getId(),
+				$group->getName(),
+			];
 		}
 
-		return $this->render($res, [ 'Groups' => $groups ]);
+		return $this->successRender($res, [ 'Groups' => $groups ]);
 	}
 
-	public function createPerson(RequestInterface $req, ResponseInterface $res, array $args) : ResponseInterface {
+    /**
+     * Adds a person to a group, including whether or not this should be publicly viewable.
+     * @param Request $req
+     * @param Response $res
+     * @param array $args
+     * @return ResponseInterface
+     */
+    public function addGroupToPerson(Request $req, Response $res, array $args) : ResponseInterface {
+		$data = $req->getParsedBody();
+		$private = false;
+
+	    $group = null;
+
+	    if(isset($data['groupID'])){
+		    $group = GroupQuery::create()->findOneById($data['groupID']);
+	    } else if(isset($args['groupID'])) {
+		    $group = GroupQuery::create()->findOneById($args['groupID']);
+	    }
+
+	    if($group == null)
+	        return $this->clientError($res, new Error(ErrorCodes::CLIENT_BAD_REQUEST, 'The group to join must be included in the request.'));
+	    if(isset($data['hidden']))
+	        $private = (bool)$data['hidden'];
+
+
+	    if($group == null)
+			return $this->clientError($res, new Error(ErrorCodes::CLIENT_NONEXISTENT_ENTITY,
+				'A group could not be located with that ID.'));
+
+	    $personGroup = new PersonGroup();
+		$personGroup
+			->setGroup($group)
+			->setPerson($this->user)
+			->setHidden($private)
+			->save();
+
+		$group
+			->addPersonGroup($personGroup)
+			->save();
+
+		return $this->successRender($res);
+	}
+
+	/**
+	 * Performs the standard set of modifications for the Person object, but does NOT commit changes to the database.
+	 * @param Person $person
+	 * @param array $data
+	 * @return Person
+	 */
+	protected function modifyPerson(Person $person, array $data) : Person {
+        if(isset($data['username']) && $person->isNew())
+            $person->setUsername($data['username']);
+        if(isset($data['name']))
+            $person->setName($data['name']);
+        if(isset($data['password']))
+            $person->setPassword($data['password']);
+
+        if(isset($data['picture'])) {
+	        try {
+	        	$original = $person->getPicture();
+		        $img = $this->imager->make($data['picture']);
+		        $img->fit(300, 300, function(Constraint $constraint) {
+			        $constraint->upsize();
+		        });
+
+		        $relativePath = DIRECTORY_SEPARATOR . 'img' . DIRECTORY_SEPARATOR . 'users' . DIRECTORY_SEPARATOR . uniqid($person->getId() . '_') . '.jpg';
+				$fullPath = $this->ci['assemble']['public_dir'] . $relativePath;
+		        $img->save($fullPath);
+		        $person->setPicture($relativePath);
+
+		        // Now remove the old picture. Ignore errors on a non-existent file, we don't mind.
+		        if(strpos($original, 'default') == false) {
+			        @unlink($this->ci['assemble']['public_dir'] . $original);
+		        }
+	        } catch (NotReadableException $exception){
+				throw new ImageException();
+	        }
+        }
+
+        return $person;
+    }
+
+	public function createPerson(Request $req, Response $res, array $args) : ResponseInterface {
 		// TODO: User avatar
 		$data = $req->getParsedBody();
-		if(empty($data['Username']))
-			return $this->clientError($res, new Error(ErrorCodes::CLIENT_VAGUE_BAD_REGISTRATION, 'Missing field \'Username\''));
+		if(empty($data['username']))
+			return $this->clientError($res, new Error(ErrorCodes::CLIENT_VAGUE_BAD_REGISTRATION, 'Missing field \'username\''));
 
-		$existing = PersonQuery::create()->findOneByUsername($data['Username']);
+		$existing = PersonQuery::create()->findOneByUsername($data['username']);
 
 		if($existing != null)
 			return $this->clientError($res, new Error(ErrorCodes::CLIENT_EXISTING_USERNAME));
-		if(empty($data['Name']))
-			return $this->clientError($res, new Error(ErrorCodes::CLIENT_VAGUE_BAD_REGISTRATION, 'Missing field \'Name\''));
-		if(empty($data['Password']) || strlen($data['Password']) < 5)
-			return $this->clientError($res, new Error(ErrorCodes::CLIENT_VAGUE_BAD_REGISTRATION, 'Missing field \'Password\''));
+		if(empty($data['name']))
+			return $this->clientError($res, new Error(ErrorCodes::CLIENT_VAGUE_BAD_REGISTRATION, 'Missing field \'name\''));
+		if(empty($data['password']) || strlen($data['password']) < 5)
+			return $this->clientError($res, new Error(ErrorCodes::CLIENT_VAGUE_BAD_REGISTRATION, 'Missing field \'password\''));
 
-		// OK; data seems fairly alright
-		$hp = password_hash($data['Password'], PASSWORD_BCRYPT);
 		$new_user = new Person();
+		try {
+			$this->modifyPerson($new_user, $data)
+				->save();
 
-		$new_user
-			->setUsername($data['Username'])
-			->setName($data['Name'])
-			->setPassword($hp)
-			->save();
-
-		return $this->render($res, ['Username' => $data['Username'], 'Name' => $data['Name']]);
+			return $this->successRender($res, ['username' => $data['username'], 'name' => $data['name']]);
+		} catch(ImageException $exception) {
+			$new_user->save();
+			return $this->clientError($res, new Error(ErrorCodes::CLIENT_BAD_IMAGE));
+		}
 	}
 
-	public static function hasPermission(ContainerInterface $ci) : bool {
-		// TODO: Implement checkPermission() method.
-//		d($ci->user);
-		if(!isset($ci->user) || $ci->user == null)
-			return false;
-		return true;
+	public function changePerson(Request $req, Response $res, array $args) : ResponseInterface {
+		$data = $req->getParsedBody();
+
+		$user = null;
+		if(isset($args['userID'])){
+			$user = PersonQuery::create()->findOneById($args['userID']);
+			if($user == null)
+				return $this->clientError($res, new Error(ErrorCodes::CLIENT_NONEXISTENT_ENTITY));
+		} else {
+			$user = $this->user;
+		}
+		try {
+			$this->modifyPerson($user, $data)
+				->save();
+
+			return $this->successRender($res);
+		} catch(ImageException $exception) {
+			$user->save();
+			return $this->clientError($res, new Error(ErrorCodes::CLIENT_BAD_IMAGE));
+		}
+	}
+
+	public function getPersonalFeed(RequestInterface $req, Response $res, array $args) : ResponseInterface {
+		/** @var Person $user */
+		$user = $this->ci->get('user');
+		$personalFeed = PostQuery::create()
+			->useGroupQuery()
+				->usePersonGroupQuery()
+					->filterByPerson($user)
+				->endUse()
+			->endUse()
+			->find();
+
+		$feed = [];
+
+		foreach ($personalFeed as $post) {
+			$author = $post->getPerson();
+			$feed[] = [
+				'id' => $post->getId(),
+				'title' => $post->getTitle(),
+				'body' => $post->getBody(),
+				'time' => $post->getCreatedAt()->getTimestamp(),
+				'group' => [
+					'id' => $post->getGroupid(),
+					'name' => $post->getGroup()->getName()
+				],
+				'author' => [
+					'id' => $author->getId(),
+					'username' => $author->getUsername(),
+					'name' => $author->getName(),
+					'avatar' => $author->getPicture()
+				],
+			];
+		}
+
+		return $this->successRender($res, ['feed' => $feed ]);
+	}
+
+	public function leaveGroup(Request $req, Response $res, array $args) : ResponseInterface {
+		$data = $req->getParsedBody();
+
+		$user = $this->user;
+		if(isset($args['userID'])){
+			$user = PersonQuery::create()->findOneById($args['userID']);
+			if($user == null)
+				return $this->clientError($res, new Error(ErrorCodes::CLIENT_NONEXISTENT_ENTITY,
+					'A user with that ID could not be located.'));
+		}
+
+		$group = null;
+
+		if(isset($args['groupID'])){
+			$group = GroupQuery::create()->findOneById($args['groupID']);
+		} else if(isset($data['groupID'])){
+			$group = GroupQuery::create()->findOneById($data['groupID']);
+		}
+
+		if($group == null)
+			return $this->clientError($res, new Error(ErrorCodes::CLIENT_NONEXISTENT_ENTITY,
+				'A group with that ID could not be located.'));
+
+		$userInGroup = PersonGroupQuery::create()->filterByGroup($group)->filterByPerson($user)->findOne();
+
+		if($userInGroup == null)
+			return $this->clientError($res, new Error(ErrorCodes::CLIENT_NONEXISTENT_ENTITY,
+				'This user is not a member of that group.'));
+		$group
+			->removePerson($user)
+			->save();
+
+		return $this->successRender($res);
 	}
 }

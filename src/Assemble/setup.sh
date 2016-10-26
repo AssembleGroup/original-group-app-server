@@ -13,8 +13,17 @@ echo "--- Installed/updated dependencies. ---"
 cd ./Config/Propel || exit
 
 existing(){
-    propel migration:diff
     propel migration:up
+    if [ ! $? -eq 0 ]; then
+        read -p $'\e[33m\e[1m>>> There is an issue with your database. Would you like to try resetting it?\e[0m\e[39m Answering \'y\' or \'yes\' will wipe all data (in the database). [y/n] ' -n 1 -r
+        echo    # (optional) move to a new line
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+            propel sql:build --overwrite
+            propel sql:insert
+        else
+            exit
+        fi
+    fi
 }
 
 

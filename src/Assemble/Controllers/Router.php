@@ -14,16 +14,26 @@ use Assemble\Middleware\Permissions\GuestPermissions;
 use Assemble\Middleware\Permissions\OwnerPermissions;
 use Assemble\Middleware\Permissions\RegisteredPermissions;
 use Assemble\Server;
+use Intervention\Image\Constraint;
+use Intervention\Image\Exception\NotReadableException;
+use Intervention\Image\ImageManager;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
+use Slim\Http\Request;
+use Slim\Http\Response;
 use Slim\Middleware\HttpBasicAuthentication;
 
 class Router {
 	public static function pave(\Slim\App $app){
 
+        // TODO: /interests, Permissions on /group patching/putting - use the privilege attribute on the person_group table!
 
 		$app->get('/', BaseController::class . ':getBase');
+        $app->post('/picture', function(Request $req, Response $res, array $args) use($app) {
+
+        });
 		$app->post('/register', PersonController::class . ':createPerson')->add(GuestPermissions::class);
+		$app->get('/feed', PersonController::class . ':getPersonalFeed')->add(RegisteredPermissions::class);
 
 		$app->group('/user', function() use ($app) {
 			$app->get('', PersonController::class . ':getCurrentPerson')->add(RegisteredPermissions::class);
@@ -34,10 +44,12 @@ class Router {
 			$app->get('/groups', PersonController::class . ':getPersonGroups')->add(OwnerPermissions::class);
 
 			$app->group('/group', function() use ($app){
-				$app->post('', PersonController::class . ':addGroupToPerson')->add(OwnerPermissions::class);
-				$app->delete('', PersonController::class . ':removeGroupFromPerson')->add(OwnerPermissions::class);
+				$app->post('', PersonController::class . ':addGroupToPerson')->add(RegisteredPermissions::class);
+				$app->delete('', PersonController::class . ':leaveGroup')->add(RegisteredPermissions::class);
+				$app->group('/{groupID:\d{1,6}}', function () use($app){
+					$app->delete('', PersonController::class . ':leaveGroup')->add(RegisteredPermissions::class);
+				});
 			});
-
 			$app->group('/{personID:\d{1,6}}', function() use($app) {
 				$app->get('', PersonController::class . ':getSpecificPerson');
 				$app->map(['PATCH', 'PUT'],'', PersonController::class . ':changePerson')->add(OwnerPermissions::class);
@@ -63,8 +75,6 @@ class Router {
 			$app->group('/{groupID:\d{1,6}}', function () use($app){
 				$app->get('', GroupController::class . ':getGroup');
 				$app->map(['PATCH', 'PUT'],'', GroupController::class . ':changeGroup');
-
-				$app->get('/users', GroupController::class . ':getGroupPeople');
 
 				$app->group('/feed', function() use ($app) {
 					$app->get('[/page/{page:\d{1,6}}]', GroupController::class . ':getGroupFeed');

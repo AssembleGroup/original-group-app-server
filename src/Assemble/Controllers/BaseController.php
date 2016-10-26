@@ -17,17 +17,12 @@ use Psr\Http\Message\ResponseInterface;
 class BaseController extends Controller {
 	// GET '/'
 	public function getBase(RequestInterface $req, ResponseInterface $res, array $args): ResponseInterface {
-		return $this->render($res);
+		return $this->successRender($res);
 	}
 
 	public function getTestAuth(RequestInterface $req, ResponseInterface $res, array $args) : ResponseInterface{
 	    $userdata = $this->ci->user->toArray();
         unset($userdata['Password']);
-        return $this->render($res, $userdata);
+        return $this->successRender($res, $userdata);
     }
-
-	public static function hasPermission(ContainerInterface $ci) : bool {
-		// TODO: Implement checkPermission() method.
-		return true;
-	}
 }

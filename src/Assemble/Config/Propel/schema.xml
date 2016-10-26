@@ -4,8 +4,9 @@
         <column name="id" type="integer" required="true" primaryKey="true" autoIncrement="true"/>
         <column name="name" type="varchar" size="100" primaryString="true" default="Untitled" />
         <column name="picture" type="varchar" size="100" default="/img/default/group.png" />
-        <column name="type" type="ENUM" valueSet="OPEN,CLOSED" default="OPEN" />
-        <!-- <column name="position" type="object" /> -->
+        <column name="closed" type="boolean" default="false" />
+        <column name="hidden" type="boolean" default="false" />
+        <column name="position" type="object" />
         <behavior name="timestampable"/>
         <unique name="unique_name">
             <unique-column name="name" size="100"/>
@@ -20,12 +21,13 @@
         <column name="id" type="integer" required="true" primaryKey="true" autoIncrement="true" />
         <column name="name" type="varchar" size="120" required="true" />
         <column name="username" type="varchar" size="30" required="true" primaryString="true" />
-        <column name="password" type="varchar" size="100" required="true" />
+        <column name="password" type="varchar" size="30" required="true" />
         <column name="picture" type="varchar" size="100" default="/img/default/person.png" />
         <column name="privilege" type="ENUM" valueSet="USER,ADMIN" default="USER" />
         <unique name="unique_username">
             <unique-column name="username" size="30"/>
         </unique>
+        <behavior name="timestampable"/>
         <!--<behavior name="query_cache">-->
         <!--<parameter name="backend" value="custom" />-->
         <!--</behavior>-->
@@ -33,6 +35,9 @@
     <table name="interest" phpName="Interest">
         <column name="id" type="integer" required="true" primaryKey="true" autoIncrement="true" />
         <column name="name" type="varchar" size="60" required="true" primaryString="true" />
+        <unique name="unique_name">
+            <unique-column name="name" size="60"/>
+        </unique>
         <!--<behavior name="query_cache">-->
         <!--<parameter name="backend" value="custom" />-->
         <!--</behavior>-->
@@ -42,6 +47,8 @@
         <column name="groupID" type="integer" primaryKey="true" />
         <column name="personID" type="integer" />
         <column name="body" type="longvarchar" required="true" />
+        <column name="title" type="varchar" size="40" required="true" />
+        <behavior name="timestampable"/>
         <!--<behavior name="query_cache">-->
         <!--<parameter name="backend" value="custom" />-->
         <!--</behavior>-->
@@ -57,12 +64,14 @@
         <column name="personID" type="integer" required="true" primaryKey="true" />
         <column name="groupID" type="integer" required="true" primaryKey="true" />
         <column name="hidden" type="BOOLEAN" default="false" />
+        <column name="privilege" type="ENUM" valueSet="USER,ADMIN" default="USER" />
         <foreign-key foreignTable="person" onDelete="CASCADE">
             <reference local="personID" foreign="id"/>
         </foreign-key>
         <foreign-key foreignTable="assemblegroup" onDelete="CASCADE">
             <reference local="groupID" foreign="id"/>
         </foreign-key>
+        <behavior name="timestampable"/>
         <!--<behavior name="query_cache">-->
         <!--<parameter name="backend" value="custom" />-->
         <!--</behavior>-->
