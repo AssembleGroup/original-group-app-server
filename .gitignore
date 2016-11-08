@@ -1,9 +1,11 @@
 .idea/
 src/Assemble/vendor/
-src/Assemble/Config/Propel/generated-*/
+src/Assemble/Config/Propel/generated-conf/
+src/Assemble/Config/Propel/generated-sql/
 src/Assemble/Logs/
 node_modules/
 src/Assemble/composer.phar
 src/Assemble/composer.lock
 src/Assemble/Models/Base/
 src/Assemble/Models/Map/
+src/Assemble/.existing-original-server
