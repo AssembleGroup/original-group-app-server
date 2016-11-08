@@ -21,7 +21,7 @@ class Person extends BasePerson {
      * @return $this|Person
      */
     public function setPassword($v) {
-        $hp = password_hash($v, PASSWORD_BCRYPT);
+        $hp = password_hash($v, PASSWORD_DEFAULT);
         parent::setPassword($hp);
         return $this;
     }
