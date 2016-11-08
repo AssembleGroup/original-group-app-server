@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="UTF-8">
+    <title>Original-group-app-server by AssembleGroup</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+  </head>
+  <body>
+    <section class="page-header">
+      <h1 class="project-name">Original-group-app-server</h1>
+      <h2 class="project-tagline">Totally original group application management server/back-end, using JSON.</h2>
+      <a href="https://github.com/AssembleGroup/original-group-app-server" class="btn">View on GitHub</a>
+      <a href="https://github.com/AssembleGroup/original-group-app-server/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/AssembleGroup/original-group-app-server/tarball/master" class="btn">Download .tar.gz</a>
+    </section>
+
+    <section class="main-content">
+      <h1>
+<a id="totally-original-group-application" class="anchor" href="#totally-original-group-application" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Totally Original Group Application</h1>
+
+<h2>
+<a id="the-api" class="anchor" href="#the-api" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>The API</h2>
+
+<h3>
+<a id="entities" class="anchor" href="#entities" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Entities</h3>
+
+<h4>
+<a id="user" class="anchor" href="#user" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>User</h4>
+
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th align="center">Max size</th>
+<th align="center">Required</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>name</td>
+<td>string</td>
+<td align="center">120</td>
+<td align="center">yes</td>
+<td></td>
+</tr>
+<tr>
+<td>username</td>
+<td>string</td>
+<td align="center">30</td>
+<td align="center">yes</td>
+<td>Must be unique</td>
+</tr>
+<tr>
+<td>password</td>
+<td>string</td>
+<td align="center">25</td>
+<td align="center">yes</td>
+<td>The password will be encrypted, server-side</td>
+</tr>
+<tr>
+<td>picture</td>
+<td>string/raw image/url</td>
+<td align="center">-</td>
+<td align="center">no</td>
+<td><a href="http://image.intervention.io/api/make#content">Supports many formats</a></td>
+</tr>
+</tbody>
+</table>
+
+<h4>
+<a id="group" class="anchor" href="#group" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Group</h4>
+
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th align="center">Max size</th>
+<th align="center">Required</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>name</td>
+<td>string</td>
+<td align="center"></td>
+<td align="center">yes</td>
+<td>Does not have to be unique.</td>
+</tr>
+<tr>
+<td>picture</td>
+<td>string/raw image/url</td>
+<td align="center">-</td>
+<td align="center">no</td>
+<td><a href="http://image.intervention.io/api/make#content">Supports many formats</a></td>
+</tr>
+<tr>
+<td>closed</td>
+<td>bool</td>
+<td align="center">-</td>
+<td align="center">no</td>
+<td>Sets whether or not new users can join.</td>
+</tr>
+<tr>
+<td>hidden</td>
+<td>bool</td>
+<td align="center">-</td>
+<td align="center">no</td>
+<td>Sets whether or not this group is publicly viewable.</td>
+</tr>
+<tr>
+<td>position</td>
+<td>lat/long as string</td>
+<td align="center">-</td>
+<td align="center">no</td>
+<td>The longitude/latitude of the group's [general] position - might change to an address?</td>
+</tr>
+</tbody>
+</table>
+
+<h3>
+<a id="end-points" class="anchor" href="#end-points" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>End Points</h3>
+
+<p>The final column shows whether or not this route has been implemented (to at least a partially working degree) as of the latest commit. The parameter list should indicate how much is working.</p>
+
+<p>Where necessary, pagination must be added (or put another way, would have to be added in a real system).</p>
+
+<p>As stated, everything is returned in JSON format.</p>
+
+<h5>
+<a id="as-of-v02-all-parameters-are-lower-case-to-fit-json-de-facto-standards" class="anchor" href="#as-of-v02-all-parameters-are-lower-case-to-fit-json-de-facto-standards" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>As of v0.2, all parameters are LOWER CASE to fit JSON de facto standards.</h5>
+
+<h4>
+<a id="userspeople" class="anchor" href="#userspeople" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Users/People</h4>
+
+<table>
+<thead>
+<tr>
+<th>Path</th>
+<th>METHOD</th>
+<th>Parameters</th>
+<th>Notes</th>
+<th align="center">✓</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>/</td>
+<td>GET</td>
+<td>-</td>
+<td>Returns standard response (version, 200 OK etc.)</td>
+<td align="center">✓</td>
+</tr>
+<tr>
+<td>/register</td>
+<td>POST</td>
+<td>See user table</td>
+<td>You cannot register if you have logged in/submitted HTTP BASIC AUTH.</td>
+<td align="center">✓</td>
+</tr>
+<tr>
+<td>/user</td>
+<td>POST</td>
+<td>-</td>
+<td>Alias of POST /register</td>
+<td align="center">✓</td>
+</tr>
+<tr>
+<td>/feed</td>
+<td>GET</td>
+<td>-</td>
+<td>Returns your feed</td>
+<td align="center">✓</td>
+</tr>
+<tr>
+<td>/user</td>
+<td>GET</td>
+<td>-</td>
+<td>Returns current User data, or error if not logged in.</td>
+<td align="center">✓</td>
+</tr>
+<tr>
+<td>/user</td>
+<td>PUT/PATCH</td>
+<td>Changed fields from user table</td>
+<td>For editing your data - only submit the changed/altered fields.</td>
+<td align="center">✓</td>
+</tr>
+<tr>
+<td>/user/feed</td>
+<td>GET</td>
+<td>-</td>
+<td>Returns your feed</td>
+<td align="center">✓</td>
+</tr>
+<tr>
+<td>/user/groups</td>
+<td>GET</td>
+<td>-</td>
+<td>Returns a list of your groups [groupID: groupName]</td>
+<td align="center">✓</td>
+</tr>
+<tr>
+<td>/user/group</td>
+<td>POST</td>
+<td>groupID <em>(int)</em>, hidden <em>(bool)</em>
+</td>
+<td>Add yourself to a group</td>
+<td align="center">✓</td>
+</tr>
+<tr>
+<td>/user/group</td>
+<td>DELETE</td>
+<td>groupID <em>(int)</em>
+</td>
+<td>Remove yourself from a group</td>
+<td align="center">✓</td>
+</tr>
+<tr>
+<td>/user/1</td>
+<td>GET</td>
+<td>-</td>
+<td>Returns User data for user #1</td>
+<td align="center">✓</td>
+</tr>
+<tr>
+<td>/user/1</td>
+<td>PATCH/PUT</td>
+<td>Changed fields from user table</td>
+<td>Updates user #1's details - changed fields only. For admin use (e.g. removing abusive profile pic etc.). May not be used.</td>
+<td align="center">✓</td>
+</tr>
+<tr>
+<td>/user/1/groups</td>
+<td>GET</td>
+<td>-</td>
+<td>Returns <em>PUBLIC</em> (i.e. not <em>HIDDEN</em>) groups of user #1.</td>
+<td align="center">✓</td>
+</tr>
+<tr>
+<td>/user/1/group</td>
+<td>POST</td>
+<td>groupID <em>(int)</em>, hidden <em>(bool)</em>
+</td>
+<td>Deprecated in favour of an invite /group/1/invite (which may not be implemented anyway).</td>
+<td align="center">X</td>
+</tr>
+</tbody>
+</table>
+
+<h4>
+<a id="groups" class="anchor" href="#groups" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Groups</h4>
+
+<table>
+<thead>
+<tr>
+<th>Path</th>
+<th>METHOD</th>
+<th>Parameters</th>
+<th>Notes</th>
+<th align="center">✓</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>/group</td>
+<td>POST</td>
+<td>See group table</td>
+<td>Creates a group with provided parameters.</td>
+<td align="center">✓</td>
+</tr>
+<tr>
+<td>/group/25</td>
+<td>GET</td>
+<td>-</td>
+<td>Gets group information for #25, NOT including users (may change).</td>
+<td align="center">✓</td>
+</tr>
+<tr>
+<td>/group/25</td>
+<td>PATCH/PUT</td>
+<td>Changed fields from group table</td>
+<td>Updates group information for #25. Only available to staff or owners of groups.</td>
+<td align="center"></td>
+</tr>
+<tr>
+<td>/group/25</td>
+<td>DELETE</td>
+<td>-</td>
+<td>Deletes group #25. Only available to staff or owners of groups.</td>
+<td align="center"></td>
+</tr>
+<tr>
+<td>/group/25/users</td>
+<td>GET</td>
+<td>-</td>
+<td>Retrieves all PUBLIC users of group #25</td>
+<td align="center"></td>
+</tr>
+<tr>
+<td>/group/25 /user/8</td>
+<td>DELETE</td>
+<td>-</td>
+<td>Removes user #8 from group 25. For group owners and admins only.</td>
+<td align="center"></td>
+</tr>
+<tr>
+<td>/group/25 /feed/page/2</td>
+<td>GET</td>
+<td>-</td>
+<td>Retrieves the group feed, page 2. The <em>/page/2</em> segment is optional. <em>/group/25/feed</em> returns the first page of posts and is equivilent to <em>/group/25/feed/page/1</em>.</td>
+<td align="center">✓</td>
+</tr>
+<tr>
+<td>/group/25 /feed/post/5</td>
+<td>PATCH/PUT</td>
+<td>Changed fields from group table</td>
+<td>Updates the changed fields (post text, title, etc.) of post #5, which has been posted in group #25's feed.</td>
+<td align="center"></td>
+</tr>
+<tr>
+<td>/group/25 /feed/post/5</td>
+<td>DELETE</td>
+<td>-</td>
+<td>Deletes post #5, which has been posted in group #25's feed.</td>
+<td align="center"></td>
+</tr>
+</tbody>
+</table>
+
+<h4>
+<a id="othermiscellaneous" class="anchor" href="#othermiscellaneous" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Other/Miscellaneous</h4>
+
+<table>
+<thead>
+<tr>
+<th>Path</th>
+<th>METHOD</th>
+<th>Parameters</th>
+<th>Notes</th>
+<th align="center">✓</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>/interests/page/2</td>
+<td>GET</td>
+<td>-</td>
+<td>Page 2 of list of interests. The page is optional and can be ommited (so it becomes <em>/interests</em>, showing the first page - equivilent to <em>/interests/page/1</em>).</td>
+<td align="center"></td>
+</tr>
+<tr>
+<td>/interest/5</td>
+<td>GET</td>
+<td>-</td>
+<td>List of groups that are associated with interest #5</td>
+<td align="center"></td>
+</tr>
+</tbody>
+</table>
+
+      <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/AssembleGroup/original-group-app-server">Original-group-app-server</a> is maintained by <a href="https://github.com/AssembleGroup">AssembleGroup</a>.</span>
+
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
+      </footer>
+
+    </section>
+
+  
+  </body>
+</html>
