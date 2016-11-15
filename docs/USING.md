@@ -67,3 +67,4 @@ As stated, everything is returned in JSON format.
 |-------------------|--------|------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------|:-:|
 | /interests/page/2 | GET    | -          | Page 2 of list of interests. The page is optional and can be ommited (so it becomes */interests*, showing the first page - equivilent to */interests/page/1*). |   |
 | /interest/5       | GET    | -          | List of groups that are associated with interest #5                                                                                                            |   |
+| /logs             | GET    | -          | View the log files! Only available when DEBUG is turned on.                                                                                                    | ✓ |
