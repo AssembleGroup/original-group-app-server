@@ -89,7 +89,7 @@ class Server {
 	}
 
 	public function __invoke() {
-		Router::pave($this->app);
+		Router::pave($this->app, self::$DEBUG);
 		return $this->app->run();
 	}
 
