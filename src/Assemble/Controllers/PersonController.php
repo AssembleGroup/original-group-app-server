@@ -150,15 +150,21 @@ class PersonController extends Controller {
 		return $this->successRender($res);
 	}
 
-	/**
-	 * Performs the standard set of modifications for the Person object, but does NOT commit changes to the database.
-	 * @param Person $person
-	 * @param array $data
-	 * @return Person
-	 */
+    /**
+     * Performs the standard set of modifications for the Person object, but does NOT commit changes to the database.
+     * @param Person $person
+     * @param array $data
+     * @return Person
+     * @throws ImageException
+     */
 	protected function modifyPerson(Person $person, array $data) : Person {
-        if(isset($data['username']) && $person->isNew())
-            $person->setUsername($data['username']);
+	    if($person->isNew()){
+            if(isset($data['username']))
+                $person->setUsername($data['username']);
+            if(isset($data['email']))
+                $person->setEmail($data['email']);
+        }
+
         if(isset($data['name']))
             $person->setName($data['name']);
         if(isset($data['password']))
@@ -193,18 +199,26 @@ class PersonController extends Controller {
 		// TODO: User avatar
 		$data = $req->getParsedBody();
 		if(empty($data['username']))
-			return $this->clientError($res, new Error(ErrorCodes::CLIENT_VAGUE_BAD_REGISTRATION, 'Missing field \'username\''));
+			return $this->clientError($res, new Error(ErrorCodes::CLIENT_VAGUE_BAD_REGISTRATION,
+                'Missing field \'username\''));
 
 		$existing = PersonQuery::create()->findOneByUsername($data['username']);
 
 		if($existing != null)
 			return $this->clientError($res, new Error(ErrorCodes::CLIENT_EXISTING_USERNAME));
-		if(empty($data['name']))
-			return $this->clientError($res, new Error(ErrorCodes::CLIENT_VAGUE_BAD_REGISTRATION, 'Missing field \'name\''));
 		if(empty($data['password']) || strlen($data['password']) < 5)
-			return $this->clientError($res, new Error(ErrorCodes::CLIENT_VAGUE_BAD_REGISTRATION, 'Missing field \'password\''));
+			return $this->clientError($res, new Error(ErrorCodes::CLIENT_VAGUE_BAD_REGISTRATION,
+                'Missing field \'password\''));
+        if(empty($data['email']))
+            return $this->clientError($res, new Error(ErrorCodes::CLIENT_VAGUE_BAD_REGISTRATION,
+                'You must provide an email address.'));
 
-		$new_user = new Person();
+        $existing = PersonQuery::create()->findOneByEmail($data['email']);
+        if($existing != null)
+            return $this->clientError($res, new Error(ErrorCodes::CLIENT_VAGUE_BAD_REGISTRATION,
+                'An account with this email address has already been registered.'));
+
+        $new_user = new Person();
 		try {
 			$this->modifyPerson($new_user, $data)
 				->save();

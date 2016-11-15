@@ -31,6 +31,7 @@ class Person extends BasePerson {
 		$payload['username'] = $this->getUsername();
 		$payload['id'] = $this->getId();
 		$payload['name'] = $this->getName();
+        $payload['email'] = $this->getEmail();
 		$payload['picture'] = $this->getPicture();
 		$payload['privilege'] = $this->getPrivilege();
 		$payload['createdAt'] = $this->getCreatedAt()->getTimestamp();

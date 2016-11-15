@@ -24,11 +24,17 @@ use Slim\Http\Response;
 use Slim\Middleware\HttpBasicAuthentication;
 
 class Router {
-	public static function pave(\Slim\App $app){
+	public static function pave(\Slim\App $app, bool $debug = false){
 
         // TODO: /interests, Permissions on /group patching/putting - use the privilege attribute on the person_group table!
 
 		$app->get('/', BaseController::class . ':getBase');
+        if($debug) {
+            $app->group('/logs', function() use ($app){
+                $app->get('', BaseController::class . ':getLogs');
+                $app->get('/{logName}', BaseController::class . ':getSpecificLog');
+            });
+        }
         $app->post('/picture', function(Request $req, Response $res, array $args) use($app) {
 
         });

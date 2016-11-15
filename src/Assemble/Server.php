@@ -57,7 +57,7 @@ class Server {
 			'debug' => static::$DEBUG,
 			'public_dir' => __DIR__ . "/../../Public",
 			'feed_posts_per_page' => 15,
-			'version' => 'alpha-0.2',
+			'version' => 'alpha-0.3',
 		];
 
 		$container[Permissions::$containerFolder] = $container->protect(function($ci, $request, $response, $msg = null) use ($container): ResponseInterface  {
@@ -89,7 +89,7 @@ class Server {
 	}
 
 	public function __invoke() {
-		Router::pave($this->app);
+		Router::pave($this->app, self::$DEBUG);
 		return $this->app->run();
 	}
 

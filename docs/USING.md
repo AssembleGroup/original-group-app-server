@@ -7,7 +7,8 @@
 #### User
 | Parameter | Type                 | Max size | Required | Notes                                                                        |
 |-----------|----------------------|:--------:|:--------:|------------------------------------------------------------------------------|
-| name      | string               | 120      | yes      |                                                                              |
+| name      | string               | 120      | no       | Not required anymore                                                                             |
+| email     | string               | 120      | yes      | Does not perform any checks on the address                                                                            |
 | username  | string               | 30       | yes      | Must be unique                                                               |
 | password  | string               | 25       | yes      | The password will be encrypted, server-side                                  |
 | picture   | string/raw image/url | -        | no       | [Supports many formats](http://image.intervention.io/api/make#content)       |
@@ -66,3 +67,4 @@ As stated, everything is returned in JSON format.
 |-------------------|--------|------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------|:-:|
 | /interests/page/2 | GET    | -          | Page 2 of list of interests. The page is optional and can be ommited (so it becomes */interests*, showing the first page - equivilent to */interests/page/1*). |   |
 | /interest/5       | GET    | -          | List of groups that are associated with interest #5                                                                                                            |   |
+| /logs             | GET    | -          | View the log files! Only available when DEBUG is turned on.                                                                                                    | ✓ |
