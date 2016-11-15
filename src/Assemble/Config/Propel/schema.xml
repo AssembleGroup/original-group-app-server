@@ -24,8 +24,12 @@
         <column name="password" type="varchar" size="255" required="true" />
         <column name="picture" type="varchar" size="100" default="/img/default/person.png" />
         <column name="privilege" type="ENUM" valueSet="USER,ADMIN" default="USER" />
+        <column name="email" type="varchar" size="120" required="true" />
         <unique name="unique_username">
             <unique-column name="username" size="30"/>
+        </unique>
+        <unique name="unique_email">
+            <unique-column name="email" size="120"/>
         </unique>
         <behavior name="timestampable"/>
         <!--<behavior name="query_cache">-->
