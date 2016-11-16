@@ -47,7 +47,7 @@ abstract class Controller {
 	public function clientError(Response $res, Error $error, array $args = []) {
 	    if($error == null)
 	        $error = new Error();
-        $this->logger->addInfo("[Client Error] #$error->code: $error->message - HTTP code $error->httpCode");
+        $this->logger->info("[Client Error] #$error->code: $error->message - HTTP code $error->httpCode");
         return $this->render($res, ['status' => 'fail' , 'data' => array_merge($args, ['error' =>[ 'type' => 'client', 'code' => $error->code, 'message' => $error->message ]])], $error->httpCode);
 	}
 
@@ -55,7 +55,7 @@ abstract class Controller {
 		if($error == null)
 			$error = new Error();
 
-        self::$sCI->logger->addInfo("[Client Error] #$error->code: $error->message - HTTP code $error->httpCode");
+        self::$sCI->logger->info("[Client Error] #$error->code: $error->message - HTTP code $error->httpCode");
 
 		$data = [
 			'api' => 'Assemble',
@@ -76,7 +76,7 @@ abstract class Controller {
 	public function serverError(Response $res, Error $error, array $args = []){
 		if($error == null)
 			$error = new Error();
-        $this->logger->error("[Server Error] #$error->code: $error->message - HTTP code $error->httpCode");
+        $this->logger->error("[ERROR] #$error->code: $error->message - HTTP code $error->httpCode");
 		return $this->render($res, ['status' => 'fail', 'data' => array_merge($args, ['error' => [ 'type' => 'server', 'code' => $error->code, 'message' => $error->message ]])], $error->httpCode);
 	}
 

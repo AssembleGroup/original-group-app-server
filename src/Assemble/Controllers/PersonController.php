@@ -147,7 +147,8 @@ class PersonController extends Controller {
 			->addPersonGroup($personGroup)
 			->save();
 
-		return $this->successRender($res);
+	    $this->logger->info("[INFO][GROUP] Successfully added the registered user to a group ([{$group->getId()}, {$group->getName()}]: {$this->user->getName()})");
+	    return $this->successRender($res);
 	}
 
     /**
@@ -223,6 +224,7 @@ class PersonController extends Controller {
 			$this->modifyPerson($new_user, $data)
 				->save();
 
+			$this->logger->info("[INFO][USER] Successfully registered/created a user ({$new_user->getId()}, {$new_user->getName()})");
 			return $this->successRender($res, ['username' => $data['username'], 'name' => $data['name']]);
 		} catch(ImageException $exception) {
 			$new_user->save();
@@ -245,6 +247,7 @@ class PersonController extends Controller {
 			$this->modifyPerson($user, $data)
 				->save();
 
+			$this->logger->info("[INFO][USER] Successfully modified a user's data ({$user->getId()}, {$user->getName()})");
 			return $this->successRender($res);
 		} catch(ImageException $exception) {
 			$user->save();
@@ -320,6 +323,7 @@ class PersonController extends Controller {
 			->removePerson($user)
 			->save();
 
+		$this->logger->info("[INFO][GROUP] Successfully removed a user from a group ([{$group->getId()}, {$group->getName()}] - [{$user->getId()}, {$user->getName()}])");
 		return $this->successRender($res);
 	}
 }
