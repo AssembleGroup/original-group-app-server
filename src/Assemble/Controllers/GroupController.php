@@ -112,7 +112,8 @@ class GroupController extends Controller {
             ->setBody($data['body'])
             ->save();
 
-        return $this->successRender($res, ['post' => ['id' => $post->getId()]]);
+	    $this->logger->info("[INFO][GROUP] Successfully posted to a group feed ([{$group->getId()}, {$group->getName()}]: {$post->getTitle()})");
+	    return $this->successRender($res, ['post' => ['id' => $post->getId()]]);
     }
 
     /**
@@ -217,7 +218,9 @@ class GroupController extends Controller {
             ->addPerson($this->user)
 			->save();
 
-		return $this->successRender($res);
+	    $this->logger->info("[INFO][GROUP] Successfully created a group ({$newGroup->getId()} : {$newGroup->getName()})");
+
+	    return $this->successRender($res);
 	}
 
     /**
@@ -237,7 +240,8 @@ class GroupController extends Controller {
         $this->modifyGroup($group, $data)
             ->save();
 
-        return $this->successRender($res);
+	    $this->logger->info("[INFO][GROUP] Successfully modified a group ({$group->getId()} : {$group->getName()})");
+	    return $this->successRender($res);
 	}
 
 	public function removePersonFromGroup(RequestInterface $req, Response $res, array $args): ResponseInterface {

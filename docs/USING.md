@@ -7,8 +7,8 @@
 #### User
 | Parameter | Type                 | Max size | Required | Notes                                                                        |
 |-----------|----------------------|:--------:|:--------:|------------------------------------------------------------------------------|
-| name      | string               | 120      | no       | Not required anymore                                                                             |
-| email     | string               | 120      | yes      | Does not perform any checks on the address                                                                            |
+| name      | string               | 120      | no       | Not required anymore                                                         |
+| email     | string               | 120      | yes      | Does not perform any checks on the address                                   |
 | username  | string               | 30       | yes      | Must be unique                                                               |
 | password  | string               | 25       | yes      | The password will be encrypted, server-side                                  |
 | picture   | string/raw image/url | -        | no       | [Supports many formats](http://image.intervention.io/api/make#content)       |
