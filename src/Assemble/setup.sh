@@ -1,5 +1,6 @@
 #!/bin/bash
 cd "${0%/*}"
+echo "$PWD/vendor/bin"
 
 export DB_HOST="${DB_HOST:-127.0.0.1}"
 export DB_NAME="${DB_NAME:-assemble}"
@@ -35,7 +36,7 @@ if [ ! -d ../../Logs ]; then
 fi
 
 $EXEC_AS $COMPOSER_CMD update
-PATH=$(reallink -f ./vendor/bin):$PATH
+PATH="$PWD/vendor/bin":$PATH
 echo "--- Installed/updated dependencies. ---"
 cd ./Config/Propel || exit
 
