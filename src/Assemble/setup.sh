@@ -2,6 +2,8 @@
 cd "${0%/*}"
 echo "$PWD/vendor/bin"
 
+mysql -e 'CREATE DATABASE IF NOT EXISTS assemble;'
+
 export DB_HOST="${DB_HOST:-127.0.0.1}"
 export DB_NAME="${DB_NAME:-assemble}"
 export DB_PORT="${DB_PORT:-3306}"

@@ -6,8 +6,6 @@ addons:
   mariadb: '10.0'
 services:
   - maridb
-before_script:
-  - mysql -e 'create database assemble;'
 env:
   - DB_NAME=assemble DB_HOST=127.0.0.1 DB_USER=root DB_PASS=''
 install: ./src/Assemble/setup.sh unattended
