@@ -3,6 +3,7 @@
 namespace Assemble\Models;
 
 use Assemble\Models\Base\Person as BasePerson;
+use Propel\Runtime\Connection\ConnectionInterface;
 
 /**
  * Skeleton subclass for representing a row from the 'person' table.
@@ -20,7 +21,15 @@ class Person extends BasePerson {
      * @param string $v
      * @return $this|Person
      */
-    public function setPassword($v) {
+    public function delete(ConnectionInterface $con = null) {
+	    parent::delete($con);
+	    if(strpos($this->getPicture(), 'default') === false){
+		    unlink(__DIR__ . '/../../../Public/' . $this->getPicture());
+	    }
+	    return $this;
+    }
+
+	public function setPassword($v) {
         $hp = password_hash($v, PASSWORD_DEFAULT);
         parent::setPassword($hp);
         return $this;

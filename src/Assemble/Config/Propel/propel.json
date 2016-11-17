@@ -11,9 +11,9 @@
       "connections": {
         "assemble": {
           "adapter": "mysql",
-          "dsn": "mysql:host=127.0.0.1;port=3306;dbname=assemble",
-          "user": "assemble",
-          "password": "betterThanFacebookGroups",
+          "dsn": "mysql:host=%env.DB_HOST%;port=%env.DB_PORT%;dbname=%env.DB_NAME%",
+          "user": "%env.DB_USER%",
+          "password": "%env.DB_PASS%",
           "settings": {
             "charset": "utf8"
           }

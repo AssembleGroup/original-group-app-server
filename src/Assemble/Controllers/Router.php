@@ -96,9 +96,9 @@ class Router {
 		$app->add(new HttpBasicAuthentication([
 			'path' => ['/'],
 			'passthrough' => ['/register', '/test'],
-			'authenticator' => new AssembleAuthenticator($app->getContainer()),
+			'authenticator' => new AssembleAuthenticator($app->getContainer()['user']),
 			'secure' => !Server::$DEBUG,
-			'error' => function (RequestInterface $req, ResponseInterface $res, array $args) use ($app) {
+			'error' => function (RequestInterface $req, Response $res, array $args) use ($app) {
 				return (new BaseController($app->getContainer()))->clientError($res, new Error(ErrorCodes::CLIENT_VAGUE_BAD_LOGIN));
 			},
 		]));

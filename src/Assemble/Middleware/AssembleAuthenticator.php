@@ -14,9 +14,9 @@ use Interop\Container\ContainerInterface;
 use Slim\Middleware\HttpBasicAuthentication\AuthenticatorInterface;
 
 class AssembleAuthenticator implements AuthenticatorInterface {
-    private $cont;
-    public function __construct(ContainerInterface $cont){
-        $this->cont = $cont;
+    private $user;
+    public function __construct($user){
+        $this->user = $user;
     }
 
 	public function __invoke(array $args) : bool {
@@ -26,11 +26,10 @@ class AssembleAuthenticator implements AuthenticatorInterface {
 			return true;
 		}
 		$user = PersonQuery::create()->findOneByUsername($args['user']);
-        //sd($user);
 
 		if($user != null) {
 			if(password_verify($args['password'], $user->getPassword())) {
-			    $this->cont['user'] = $user;
+			    $this->user = $user;
                 return true;
             }
 		}

@@ -1,31 +1,46 @@
 #!/bin/bash
-if [ $# -eq 0 ]; then
-    read -p "Which user does PHP run under? [www-data]: " HTTP_USER
-fi
-HTTP_USER=${HTTP_USER:-"www-data"}
-EXEC_AS=""
+cd "${0%/*}"
 
-if [ ! -e composer.phar ]; then
+export DB_HOST="${DB_HOST:-127.0.0.1}"
+export DB_NAME="${DB_NAME:-assemble}"
+export DB_PORT="${DB_PORT:-3306}"
+export DB_USER="${DB_USER:-assemble}"
+export DB_PASS="${DB_PASS:-betterThanFacebookGroups}"
+
+if [ $# -eq 0 ]; then
+    read -p "Which user should we run these commands under? [$(whoami)]: " HTTP_USER
+fi
+HTTP_USER=${HTTP_USER:-$(whoami)}
+EXEC_AS=""
+COMPOSER_CMD="php composer.phar"
+
+hash composer 2>/dev/null
+if [ $? -eq 0 ]; then
+    COMPOSER_CMD="composer"
+elif [ ! -e composer.phar ]; then
+    installComposer
+fi
+
+echo "--- Composer ready. ---"
+
+installComposer() {
     echo "--- Composer Phar is missing, fixing... ---"
     $EXEC_AS curl https://getcomposer.org/installer | php
     echo "--- Downloaded composer. ---"
-else
-    echo "--- Composer detected. ---"
-fi
-
+}
 if [ ! -d ../../Logs ]; then
     $EXEC_AS mkdir ../../Logs
     chgrp -R $HTTP_USER  ../../Logs
     chmod -R 0764 ../../Logs
 fi
 
-$EXEC_AS php composer.phar update
-$EXEC_AS php composer.phar install -o
+$EXEC_AS $COMPOSER_CMD update
 PATH=$(realpath ./vendor/bin):$PATH
 echo "--- Installed/updated dependencies. ---"
 cd ./Config/Propel || exit
 
 existing(){
+    $EXEC_AS propel migration:up
     $EXEC_AS propel migration:diff
     $EXEC_AS propel migration:migrate
     if [ ! $? -eq 0 ]; then
