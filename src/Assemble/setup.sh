@@ -35,7 +35,7 @@ if [ ! -d ../../Logs ]; then
 fi
 
 $EXEC_AS $COMPOSER_CMD update
-PATH=$(realpath ./vendor/bin):$PATH
+PATH=$(reallink -f ./vendor/bin):$PATH
 echo "--- Installed/updated dependencies. ---"
 cd ./Config/Propel || exit
 
