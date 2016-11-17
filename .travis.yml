@@ -9,6 +9,6 @@ services:
 env:
   - DB_NAME=assemble DB_HOST=127.0.0.1 DB_USER=assemble DB_PASS=asd123
 before_install:
-  - mysql -e 'CREATE DATABASE assemble; GRANT ALL ON assemble.* TO \'assemble\'@\'%\' IDENTIFIED BY \'asd123\''
+  - mysql -e "CREATE DATABASE assemble; GRANT ALL ON assemble.* TO 'assemble'@'%' IDENTIFIED BY 'asd123';"
 install: ./src/Assemble/setup.sh unattended
 script: ./src/Assemble/vendor/bin/atoum -d tests/ --autoloader-file src/Assemble/vendor/autoload.php -ebpc
