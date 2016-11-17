@@ -9,9 +9,6 @@ services:
 before_script:
   - mysql -e 'create database assemble;'
 env:
-  - DB_NAME=assemble
-  - DB_HOST=127.0.0.1
-  - DB_USER=root
-  - DB_PASS=
+  - DB_NAME=assemble DB_HOST=127.0.0.1 DB_USER=root DB_PASS=
 install: ./src/Assemble/setup.sh unattended
 script: ./src/Assemble/vendor/bin/atoum -d tests/ --autoloader-file src/Assemble/vendor/autoload.php -ebpc
