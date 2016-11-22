@@ -20,28 +20,31 @@ use Slim\Http\Response;
 class BaseController extends Controller
 {
     // GET '/'
-    public function getBase(RequestInterface $req, ResponseInterface $res, array $args): ResponseInterface
-    {
+    public function getBase(RequestInterface $req, Response $res, array $args): ResponseInterface {
         return $this->successRender($res);
     }
 
-    public function getTestAuth(RequestInterface $req, ResponseInterface $res, array $args) : ResponseInterface
-    {
+    public function getTestAuth(RequestInterface $req, Response $res, array $args) : ResponseInterface {
         $userdata = $this->ci->user->toArray();
         unset($userdata['Password']);
         return $this->successRender($res, $userdata);
     }
 
-    public function getLogs(Request $req, Response $res, array $args): ResponseInterface
-    {
-        $listing = array_diff(scandir($this->ci['settings']['logDir']), array('..', '.', '.gitignore'));
+    public function getLogs(Request $req, Response $res, array $args): ResponseInterface {
+        $listing = array_diff(@scandir($this->ci['settings']['logDir']), array('..', '.', '.gitignore'));
+	    $additional = "";
+	    $size = sizeof($listing);
+	    if($size == 0)
+	    	$additional .= "<h1>No log files. Try <a href='https://assemblegroup.github.io/original-group-app-server/'>performing an action</a> first.</h1>";
+	    else
+	    	$additional .= "<h1>$size stored currently:</h1>";
+	    $additional.= "<p>Note: logs are only written on changes or errors (i.e. not GET /user, but logs with POST /register)</p>";
         $body = $res->getBody();
-        $body->write('<li>');
+        $body->write("<!DOCTYPE html><html>$additional<ul>");
         foreach ($listing as $logfile) {
-            $body->write("<a href='" . $req->getUri()->getPath() . '/' . $logfile . "'>$logfile</a>");
+            $body->write("<li><a href='" . $req->getUri()->getPath() . '/' . $logfile . "'>$logfile</a></li>");
         }
-        $body->write('</li>');
-
+        $body->write('</ul></html>');
 
         return $res->withBody($body);
     }
